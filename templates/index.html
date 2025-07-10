@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rain Prediction App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --rain-color: #4facfe;
+            --no-rain-color: #fbc2eb;
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --text: #2b2d42;
+            --light: #f8f9fa;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(255, 255, 255, 0.3),
+                rgba(255, 255, 255, 0)
+            );
+            transform: rotate(30deg);
+            z-index: 0;
+            animation: shine 3s infinite alternate;
+        }
+        
+        @keyframes shine {
+            from { transform: rotate(30deg) translate(-10%, -10%); }
+            to { transform: rotate(30deg) translate(10%, 10%); }
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            position: relative;
+            z-index: 1;
+            font-size: 2.2rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .form-group {
+            margin-bottom: 1.2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--primary);
+        }
+        
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            outline: none;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 120px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        button:hover::after {
+            opacity: 1;
+        }
+        
+        button:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        #submitBtn {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        #randomBtn {
+            background-color: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        #result {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 15px;
+            animation: fadeIn 0.5s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .rain {
+            background: linear-gradient(135deg, var(--rain-color) 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .no-rain {
+            background: linear-gradient(135deg, var(--no-rain-color) 0%, #a6c1ee 100%);
+            color: white;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .data-table th {
+            background: rgba(255, 255, 255, 0.2);
+            font-weight: 500;
+        }
+        
+        .weather-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .container {
+                padding: 1.5rem;
+                border-radius: 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            input, button {
+                padding: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>☔ Rain Prediction App</h1>
+        
+        <form id="predictionForm">
+            <div class="form-group">
+                <label for="pressure">Pressure (hPa)</label>
+                <input type="number" step="0.01" id="pressure" name="pressure" required>
+            </div>
+            <div class="form-group">
+                <label for="temperature">Temperature (°C)</label>
+                <input type="number" step="0.01" id="temperature" name="temperature" required>
+            </div>
+            <div class="form-group">
+                <label for="dewpoint">Dewpoint (°C)</label>
+                <input type="number" step="0.01" id="dewpoint" name="dewpoint" required>
+            </div>
+            <div class="form-group">
+                <label for="humidity">Humidity (%)</label>
+                <input type="number" step="0.01" id="humidity" name="humidity" required>
+            </div>
+            <div class="form-group">
+                <label for="cloud">Cloud Cover (%)</label>
+                <input type="number" step="0.01" id="cloud" name="cloud" required>
+            </div>
+            <div class="form-group">
+                <label for="sunshine">Sunshine (hours)</label>
+                <input type="number" step="0.01" id="sunshine" name="sunshine" required>
+            </div>
+            <div class="form-group">
+                <label for="winddirection">Wind Direction (deg)</label>
+                <input type="number" step="0.01" id="winddirection" name="winddirection" required>
+            </div>
+            <div class="form-group">
+                <label for="windspeed">Wind Speed (km/h)</label>
+                <input type="number" step="0.01" id="windspeed" name="windspeed" required>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" id="submitBtn">Predict Weather</button>
+                <button type="button" id="randomBtn">Generate Random Data</button>
+            </div>
+        </form>
+        
+        <div id="result" style="display: none;">
+            <!-- Results will be inserted here by JavaScript -->
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Add loading animation
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerHTML = '<span class="loader"></span> Predicting...';
+            submitBtn.disabled = true;
+            
+            fetch('/predict', {
+                method: 'POST',
+                body: new FormData(this)
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayResult(data);
+                submitBtn.innerHTML = 'Predict Weather';
+                submitBtn.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                submitBtn.innerHTML = 'Predict Weather';
+                submitBtn.disabled = false;
+            });
+        });
+        
+        document.getElementById('randomBtn').addEventListener('click', function() {
+            const randomBtn = this;
+            randomBtn.innerHTML = '<span class="loader"></span> Generating...';
+            randomBtn.disabled = true;
+            
+            fetch('/random')
+            .then(response => response.json())
+            .then(data => {
+                // Fill the form with random data
+                Object.keys(data.input_data).forEach(key => {
+                    const input = document.querySelector(`[name="${key}"]`);
+                    if (input) input.value = data.input_data[key];
+                });
+                displayResult(data);
+                randomBtn.innerHTML = 'Generate Random Data';
+                randomBtn.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                randomBtn.innerHTML = 'Generate Random Data';
+                randomBtn.disabled = false;
+            });
+        });
+        
+        function displayResult(data) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = data.prediction === 'Rain' ? 'rain' : 'no-rain';
+            
+            const icon = data.prediction === 'Rain' ? '🌧️' : '☀️';
+            
+            let html = `
+                <div class="weather-icon">${icon}</div>
+                <h2>Prediction: ${data.prediction}</h2>
+                <p>Probability: ${data.probability}</p>
+                
+                <h3>Weather Parameters</h3>
+                <table class="data-table">
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Value</th>
+                    </tr>
+            `;
+            
+            Object.keys(data.input_data).forEach(key => {
+                html += `
+                    <tr>
+                        <td>${key.charAt(0).toUpperCase() + key.slice(1)}</td>
+                        <td>${data.input_data[key]}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `</table>`;
+            resultDiv.innerHTML = html;
+            
+            // Add confetti effect for fun
+            if (data.prediction === 'Rain' && parseFloat(data.probability) > 70) {
+                triggerConfetti();
+            }
+        }
+        
+        function triggerConfetti() {
+            // Simple confetti effect
+            const confetti = document.createElement('div');
+            confetti.style.position = 'fixed';
+            confetti.style.top = '0';
+            confetti.style.left = '0';
+            confetti.style.width = '100%';
+            confetti.style.height = '100%';
+            confetti.style.pointerEvents = 'none';
+            confetti.style.zIndex = '1000';
+            
+            for (let i = 0; i < 50; i++) {
+                const dot = document.createElement('div');
+                dot.style.position = 'absolute';
+                dot.style.width = '10px';
+                dot.style.height = '10px';
+                dot.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                dot.style.borderRadius = '50%';
+                dot.style.left = `${Math.random() * 100}%`;
+                dot.style.top = '-10px';
+                dot.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+                
+                const animation = document.createElement('style');
+                animation.innerHTML = `
+                    @keyframes fall {
+                        to {
+                            transform: translateY(100vh) rotate(${Math.random() * 360}deg);
+                            opacity: 0;
+                        }
+                    }
+                `;
+                
+                dot.appendChild(animation);
+                confetti.appendChild(dot);
+            }
+            
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => {
+                confetti.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
